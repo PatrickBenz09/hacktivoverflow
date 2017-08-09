@@ -16,8 +16,8 @@ const answerSchema = new Schema({
     type: Boolean,
     default: false
   },
-  upvotes: [{ Schema.Types.ObjectId, ref: 'User' }],
-  downvotes: [{ Schema.Types.ObjectId, ref: 'User' }]
+  upvotes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  downvotes: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 }, {
   timestamps: true
 })

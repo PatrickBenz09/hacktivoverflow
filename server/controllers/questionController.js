@@ -3,13 +3,13 @@
 const Question = require('../models/Question');
 
 let findAll = (req, res) => {
-  User.find({})
+  Question.find({})
   .then(resp => res.send(resp))
   .catch(err => res.send(err));
 }
 
 let findOne = (req, res) => {
-  User.findOne({ _id: req.params.id })
+  Question.findOne({ _id: req.params.id })
   .then(resp => res.send(resp))
   .catch(err => res.send(err));
 }

@@ -6,8 +6,8 @@ const answerController = require('../controllers/answerController');
 
 router.get('/', answersController.findAll);
 router.get('/:id', answersController.findOne);
-router.get('/', answersController.createOne);
-router.get('/:id', answersController.deleteOne);
-router.get('/:id', answersController.updateOne);
+router.post('/', answersController.createOne);
+router.delete('/:id', answersController.deleteOne);
+router.put('/:id', answersController.updateOne);
 
 module.exports = router;
