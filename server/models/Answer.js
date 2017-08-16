@@ -9,8 +9,8 @@ const answerSchema = new Schema({
     required: true
   },
   author: {
-    type: String,
-    required: true
+    type: Schema.Types.ObjectId,
+    ref:'User'
   },
   approval: {
     type: Boolean,

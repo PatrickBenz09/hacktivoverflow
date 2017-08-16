@@ -1,6 +1,8 @@
 'use strict'
 
 const User = require('../models/User');
+const Question = require('../models/Question');
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 require('dotenv').config()
@@ -31,7 +33,13 @@ let login = (req, res) => {
         email: resp.email
       }, process.env.SECRET);
       req.headers.token = token;
-      res.send(token);
+      req.headers.id = resp._id;
+      let data = {
+        token: token,
+        id: resp._id,
+        username: resp.username
+      }
+      res.json(data);
     } else {
       res.send("Wrong Password!")
     }
@@ -41,7 +49,14 @@ let login = (req, res) => {
   })
 }
 
+let findAll = (req, res) => {
+  User.find({})
+  .then(resp => res.send(resp))
+  .catch(err => res.send(err))
+}
+
 module.exports = {
   register,
-  login
+  login,
+  findAll
 };

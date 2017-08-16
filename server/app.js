@@ -12,8 +12,9 @@ mongoose.connect('mongodb://localhost/hacktiv-overflow');
 const user = require('./routers/user');
 const question = require('./routers/question');
 
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(cors())
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use('/user', user)
 app.use('/question', question)
