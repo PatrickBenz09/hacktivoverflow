@@ -24,7 +24,7 @@
           </div>
         </div>
         <div class="row">
-          <button @click="registerUser" class="btn waves-effect waves-light" type="button" name="action">Submit
+          <button @click="registerUser" class="modal-action modal-close btn waves-effect waves-light" type="button" name="action">Submit
             <i class="material-icons right">send</i>
           </button>
         </div>
@@ -47,10 +47,15 @@ export default {
   },
   methods: {
     registerUser () {
-      let self = this
-      this.$http.post('http://localhost:3000/user/register/', self.register)
-      .then(resp => console.log(resp))
-      .catch(err => console.log(err))
+      if (this.register.username === '' || this.register.password === '' || this.register.name === '' || this.register.email === '') {
+        alert('Please fill the necessary form!')
+      } else {
+        let self = this
+        this.$http.post('http://localhost:3000/user/register/', self.register)
+        .then(resp => console.log(resp))
+        .catch(err => console.log(err))
+        alert('Successfully Created Account!')
+      }
     }
   }
 }

@@ -3,17 +3,21 @@
     <div class="row">
       <div class="col s12">
         <div class="card blue-grey darken-1">
-          <div class="card-content white-text row">
-            <div class="col s4">
-              <a class="btn btn-floating pulse" @click="upvoteQuestion(question._id)"><i class="material-icons">arrow_drop_up</i></a> <br>
-              <div>{{ question.upvotes.length - question.downvotes.length }}</div>
-              <a class="btn btn-floating pulse" @click="downvoteQuestion(question._id)"><i class="material-icons">arrow_drop_down</i></a> <br>
-              <div style="margin-left: 7px; margin-top: 7px; color: #ffab40">Vote</div>
+          <div class="card-content white-text row" style="margin-bottom: -10px">
+            <div class="col s3 center-align">
+              <a @click="upvoteQuestion(question._id)" class="btn btn-floating pulse"><i class="material-icons">arrow_drop_up</i></a> <br>
+              <h5 @click="emitEmitanQuestionData" class="modal-trigger" data-target="votes" style="margin: 10px auto; color: #FFAB40">{{ question.upvotes.length - question.downvotes.length }}</h5>
+              <a @click="downvoteQuestion(question._id)" class="btn btn-floating pulse"><i class="material-icons">arrow_drop_down</i></a> <br>
+              <div @click="emitEmitanQuestionData" class="waves-effect waves-light hoverable modal-trigger" data-target="votes" style="margin-top: 10px">
+                <a style="margin-right: 5px"><span style="color: #FFAB40">{{ question.upvotes.length }}</span> <i class="material-icons">thumb_up</i></a>
+                <a style="margin-left: 5px"><span style="color: #FFAB40">{{ question.downvotes.length }}</span> <i class="material-icons" style="color: red">thumb_down</i></a>
+              </div>
             </div>
-            <div class="col s8">
+            <div class="col s9">
               <span class="card-title">{{ question.title }}</span>
               <p>{{ question.content }}</p>
-              <p class="blue-grey darken-1-text">Asked by {{ question.author.username }}</p>
+              <p class="blue-grey darken-1-text">Asked by {{ question.author.username }}</p> <br>
+              <div style="color: #9e9e9e">click the thumb to see who's upvoting / downvoting</div>
             </div>
           </div>
           <div class="card-action">
@@ -94,7 +98,20 @@ export default {
         headers: { id: localStorage.getItem('id') }
       })
       .then(resp => {
-        // self.question.upvotes.push({})
+        if (resp.data.status === "upvote") {
+          resp.data.currentUpvotes[resp.data.currentUpvotes.length - 1].username = localStorage.getItem('username')
+          self.question.upvotes = resp.data.currentUpvotes
+          self.question.downvotes = resp.data.currentDownvotes
+        }
+        else if (resp.data.status === "negateUpvote") {
+          self.question.upvotes = resp.data.currentUpvotes
+          self.question.downvotes = resp.data.currentDownvotes
+        }
+        else if (resp.data.status === "negateDownvoteThenUpvote") {
+          resp.data.currentUpvotes[resp.data.currentUpvotes.length - 1].username = localStorage.getItem('username')
+          self.question.upvotes = resp.data.currentUpvotes
+          self.question.downvotes = resp.data.currentDownvotes
+        }
       })
       .catch(err => console.log(err))
     },
@@ -104,8 +121,20 @@ export default {
         headers: { id: localStorage.getItem('id') }
       })
       .then(resp => {
-        console.log(self.question)
-        // self.question.downvotes.push({})
+        if (resp.data.status === "downvote") {
+          resp.data.currentDownvotes[resp.data.currentDownvotes.length - 1].username = localStorage.getItem('username')
+          self.question.downvotes = resp.data.currentDownvotes
+          self.question.upvotes = resp.data.currentUpvotes
+        }
+        else if (resp.data.status === "negateDownvote") {
+          self.question.downvotes = resp.data.currentDownvotes
+          self.question.upvotes = resp.data.currentUpvotes
+        }
+        else if (resp.data.status === "negateUpvoteThenDownvote") {
+          resp.data.currentDownvotes[resp.data.currentDownvotes.length - 1].username = localStorage.getItem('username')
+          self.question.downvotes = resp.data.currentDownvotes
+          self.question.upvotes = resp.data.currentUpvotes
+        }
       })
       .catch(err => console.log(err))
     },
@@ -126,11 +155,15 @@ export default {
         self.answers.push(newAnswer)
       })
       .catch(err => console.log(err))
+    },
+    emitEmitanQuestionData () {
+      this.$emit('questionData', this.question)
     }
   },
   mounted () {
     let self = this
     self.fetchData()
+    self.emitEmitanQuestionData()
     self.$http.get(`http://localhost:3000/question/${ self.id }/answer/`)
     .then(resp => self.answers = resp.data)
     .catch(err => console.log(err))

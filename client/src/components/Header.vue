@@ -3,7 +3,8 @@
 
     <nav>
       <div class="nav-wrapper indigo darken-3">
-        <a href="#" class="brand-logo">Logo</a>
+        <img style="margin-top: 7px; height: 45px; width: 60px" src="https://cdn.sstatic.net/Sites/stackoverflow/company/img/logos/so/so-icon.svg?v=6e4af45f4d66" alt="stackoverflow logo">
+        <a href="#" class="brand-logo">Hacktiv Overflow</a>
         <ul id="nav-mobile" class="right hide-on-med-and-down">
           <!-- Modal Trigger -->
           <li v-if="!user"><button class="waves-effect waves-light btn indigo darken-3 modal-trigger" data-target="modal1">Login / Register</button></li>
@@ -30,13 +31,15 @@
         <div v-else>
           <Register></Register>
         </div>
-        <a v-if="onLogin" @click="onLogin = !onLogin" href="#">I don't have an account</a>
-        <a v-else @click="onLogin = !onLogin" href="#">I have an account</a>
+        <a v-if="onLogin" @click="onLogin = !onLogin" class="btn btn-small">I don't have an account</a>
+        <a v-else @click="onLogin = !onLogin" class="btn btn-small">I have an account</a>
       </div>
       <div class="modal-footer">
-        <a href="#" class="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+        <a class="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
       </div>
     </div>
+
+
 
   </div>
 </template>
@@ -76,4 +79,9 @@ export default {
 </script>
 
 <style lang="css">
+.btn-small {
+  height: 30px;
+  line-height: 30px;
+  padding: 0 0.5rem;
+}
 </style>

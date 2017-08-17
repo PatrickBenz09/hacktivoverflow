@@ -14,7 +14,7 @@
           </div>
         </div>
         <div class="row">
-          <button @click="loginUser" class="btn waves-effect waves-light" type="button" name="action">Submit
+          <button @click="loginUser" class="modal-action modal-close btn waves-effect waves-light" type="button" name="action">Submit
             <i class="material-icons right">send</i>
           </button>
         </div>

@@ -7,6 +7,7 @@ let findAll = (req, res) => {
   .populate('author', 'username name email')
   .populate('answers.author', 'username name email')
   .populate('upvotes', 'username name email')
+  .populate('downvotes', 'username name email')
   .then(resp => res.send(resp))
   .catch(err => res.send(err));
 }
@@ -16,6 +17,7 @@ let findOne = (req, res) => {
   .populate('author', 'username name email')
   .populate('answers.author', 'username name email')
   .populate('upvotes', 'username name email')
+  .populate('downvotes', 'username name email')
   .then(resp => res.send(resp))
   .catch(err => res.send(err));
 }
@@ -86,6 +88,7 @@ let findAnswerOfOneQuestion = (req, res) => {
   .populate('author', 'username name email')
   .populate('answers.author', 'username name email')
   .populate('upvotes', 'username name email')
+  .populate('downvotes', 'username name email')
   .then(resp => res.send(resp.answers))
   .catch(err => res.send(err));
 }
@@ -93,8 +96,10 @@ let findAnswerOfOneQuestion = (req, res) => {
 let upvoteQuestion = (req, res) => {
   // Question.findOne({ downvotes: { $in: [req.params.id] } })
   Question.findOne({ _id: req.params.id })
+  .populate('upvotes', 'username name email')
+  .populate('downvotes', 'username name email')
   .then(resp => {
-    let alreadyDownvoted = resp.downvotes.map(r => r.toString())
+    let alreadyDownvoted = resp.downvotes.map(r => r._id.toString())
     alreadyDownvoted = alreadyDownvoted.includes(req.headers.id)
 
     if(alreadyDownvoted) {
@@ -102,40 +107,39 @@ let upvoteQuestion = (req, res) => {
       Question.update({ _id: req.params.id }, { $pullAll: { downvotes: [req.headers.id] }})
       .then(resp1 => {
         console.log('sudah saya hapus downvotean anda.');
-        //
-        let alreadyUpvoted = resp.upvotes.map(r => r.toString())
-        alreadyUpvoted = alreadyUpvoted.includes(req.headers.id)
-
-        if(alreadyUpvoted) {
-          console.log('anda sudah pernah upvote,jadi saya hapus upvotean anda');
-          Question.update({ _id: req.params.id }, { $pullAll: { upvotes: [req.headers.id] }})
-          .then(resp2 => res.send(resp2))
-          .catch(err2 => res.send(err2))
-        }
-        else {
-          console.log('anda belum pernah upvote');
-          Question.update({ _id: req.params.id }, { $push: { upvotes: req.headers.id }})
-          .then(resp2 => res.send(resp2))
-          .catch(err2 => res.send(err2));
-        }
+        Question.update({ _id: req.params.id }, { $push: { upvotes: req.headers.id }})
+        .then(resp2 => {
+          let currentDownvotes = resp.downvotes.filter(ru => !ru._id.equals(req.headers.id))
+          let currentUpvotes = resp.upvotes
+          currentUpvotes.push({ _id: req.headers.id })
+          res.json({ resp: resp1, status: 'negateDownvoteThenUpvote', currentUpvotes: currentUpvotes, currentDownvotes: currentDownvotes })
+        })
+        .catch(err2 => res.send(err2));
       })
       .catch(err1 => res.send(err1))
     }
     else {
       console.log('belum ada downvote saya');
       //
-      let alreadyUpvoted = resp.upvotes.map(r => r.toString())
+      let alreadyUpvoted = resp.upvotes.map(r => r._id.toString())
       alreadyUpvoted = alreadyUpvoted.includes(req.headers.id)
 
       if(alreadyUpvoted) {
-        console.log('sudah pernah saya update');
+        console.log('sudah pernah saya upvote');
         Question.update({ _id: req.params.id }, { $pullAll: { upvotes: [req.headers.id] }})
-        .then(resp1 => res.send(resp1))
+        .then(resp1 => {
+          let currentUpvotes = resp.upvotes.filter(ru => !ru._id.equals(req.headers.id))
+          res.json({ resp: resp1, status: 'negateUpvote', currentUpvotes: currentUpvotes, currentDownvotes: resp.downvotes })
+        })
         .catch(err1 => res.send(err1))
       }
       else {
         Question.update({ _id: req.params.id }, { $push: { upvotes: req.headers.id }})
-        .then(resp1 => res.send(resp1))
+        .then(resp1 => {
+          let currentUpvotes = resp.upvotes
+          currentUpvotes.push({ _id: req.headers.id })
+          res.json({ resp: resp1, status: 'upvote', currentUpvotes: currentUpvotes, currentDownvotes: resp.downvotes })
+        })
         .catch(err1 => res.send(err1));
       }
     }
@@ -145,46 +149,54 @@ let upvoteQuestion = (req, res) => {
 
 let downvoteQuestion = (req, res) => {
   Question.findOne({ _id: req.params.id })
+  .populate('downvotes', 'username name email')
+  .populate('upvotes', 'username name email')
   .then(resp => {
-    let alreadyUpvoted = resp.upvotes.map(r => r.toString())
+    let alreadyUpvoted = resp.upvotes.map(r => r._id.toString())
     alreadyUpvoted = alreadyUpvoted.includes(req.headers.id)
 
     if(alreadyUpvoted) {
-      console.log('hayganz');
+      console.log('sudah ada upvote, jadi saya akan hapus upvotean anda -- Menghapus.....');
       Question.update({ _id: req.params.id }, { $pullAll: { upvotes: [req.headers.id] }})
       .then(resp1 => {
-        //
-        let alreadyDownvoted = resp.downvotes.map(r => r.toString())
-        alreadyDownvoted = alreadyDownvoted.includes(req.headers.id)
-
-        if(alreadyDownvoted) {
-          Question.update({ _id: req.params.id }, { $pullAll: { downvotes: [req.headers.id] }})
-          .then(resp2 => res.json({ key:'value', resp2 }))
-          .catch(err2 => res.send(err2))
-        }
-        else {
-          Question.update({ _id: req.params.id }, { $push: { downvotes: req.headers.id }})
-          .then(resp2 => res.send(resp2))
-          .catch(err2 => res.send(err2));
-        }
+        console.log('sudah saya hapus upvotean anda.');
+        Question.update({ _id: req.params.id }, { $push: { downvotes: req.headers.id }})
+        .then(resp2 => {
+          let currentUpvotes = resp.upvotes.filter(rd => !rd._id.equals(req.headers.id))
+          let currentDownvotes = resp.downvotes
+          currentDownvotes.push({ _id: req.headers.id })
+          res.json({ resp: resp1, status: 'negateUpvoteThenDownvote', currentUpvotes: currentUpvotes, currentDownvotes: currentDownvotes })
+        })
+        .catch(err2 => res.send(err2));
       })
       .catch(err1 => res.send(err1))
     }
     else {
       console.log('belum ada upvote saya');
       //
-      let alreadyDownvoted = resp.downvotes.map(r => r.toString())
+      let alreadyDownvoted = resp.downvotes.map(r => r._id.toString())
       alreadyDownvoted = alreadyDownvoted.includes(req.headers.id)
 
       if(alreadyDownvoted) {
-        console.log('sudah pernah saya update');
+        console.log('sudah pernah saya downvote');
         Question.update({ _id: req.params.id }, { $pullAll: { downvotes: [req.headers.id] }})
-        .then(resp1 => res.send(resp1))
+        .then(resp1 => {
+          console.log(resp.downvotes);
+          let currentDownvotes = resp.downvotes.filter(rd => !rd._id.equals(req.headers.id))
+          console.log('obelehiho');
+          console.log(currentDownvotes);
+          res.json({ resp: resp1, status: 'negateDownvote', currentUpvotes: resp.upvotes, currentDownvotes: currentDownvotes })
+        })
         .catch(err1 => res.send(err1))
       }
       else {
         Question.update({ _id: req.params.id }, { $push: { downvotes: req.headers.id }})
-        .then(resp1 => res.send(resp1))
+        .then(resp1 => {
+          console.log('downvoting..');
+          let currentDownvotes = resp.downvotes
+          currentDownvotes.push({ _id: req.headers.id })
+          res.json({ resp: resp1, status: 'downvote', currentUpvotes: resp.upvotes, currentDownvotes: currentDownvotes })
+        })
         .catch(err1 => res.send(err1));
       }
     }
