@@ -44,7 +44,10 @@ export default {
           token: localStorage.getItem('token')
         }
       })
-      .then(resp => self.questions.push(resp.data))
+      .then(resp => {
+        // self.questions.push(resp.data)
+        this.$emit('addQuestion', resp.data)
+      })
       .catch(err => console.log(err))
     }
   }
